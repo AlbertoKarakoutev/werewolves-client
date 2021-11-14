@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "werewolves-client",
+    "slug": "werewolves-client",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "werewolves-client"
+}
