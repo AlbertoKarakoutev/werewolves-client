@@ -1,11 +1,16 @@
 {
   "expo": {
-    "name": "werewolves-client",
+    "name": "Werewolves",
     "slug": "werewolves-client",
     "version": "1.0.0",
-    "assetBundlePatterns": [
-      "**/*"
-    ]
+    "ios": {
+      "bundleIdentifier": "com.akarakoutev.werewolves",
+      "buildNumber": "1.0.0"
+    },
+    "android": {
+      "package": "com.akarakoutev.werewolves",
+      "versionCode": 1
+    }
   },
   "name": "werewolves-client"
 }
