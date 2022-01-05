@@ -40,7 +40,7 @@ const Lobby = ({ route }) => {
             const message = JSON.parse(payload.body);
             if (message.type === 'CONNECT' || message.type === 'DISCONNECT') {
                 setPlayers(message.content);
-            } else if(message.type === 'NIGHT') {
+            } else if(message.type === 'GAME_BEGIN') {
                 publicSubscription.unsubscribe();
                 privateSubscription.unsubscribe();
                 navigation.navigate('ActiveGame', { 
