@@ -24,9 +24,6 @@ const ActiveGame = ({route}) => {
     const { gameID } = route.params;
     const { username } = route.params;
 
-    // const gameID = "0000"
-    // const username = "Berto"
-
     const navigation = useNavigation();
 
     const [roles, setRoles ] = useState({
@@ -187,7 +184,7 @@ const ActiveGame = ({route}) => {
         console.log(chats)
         showNextNotification()
     
-    }, [notificationQueue, messageQueue, multipleWakeModalContent])
+    }, [notificationQueue, messageQueue, multipleWakeModalContent, chats])
 
     const showNextNotification = () => {
         if (notificationQueue.length > 0) {
