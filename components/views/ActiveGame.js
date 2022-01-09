@@ -1,5 +1,5 @@
 import React from 'react';
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef, useCallback} from 'react';
 import { FlatList, View, Text, Pressable, Image, Dimensions } from 'react-native';
 
 import { BottomModal, Modal, ModalContent, ScaleAnimation } from 'react-native-modals';
@@ -26,16 +26,7 @@ const ActiveGame = ({route}) => {
 
     const navigation = useNavigation();
 
-    const [roles, setRoles ] = useState({
-        active:{
-            sprite:"",
-            name:""
-        },
-        passive:{
-            sprite:"",
-            name:""
-        }
-    });
+    const [roles, setRoles ] = useState({active: {sprite: "", name: ""}, passive: {sprite: "", name: ""}});
     
     const [day, setDay] = useState(false)
 
@@ -50,7 +41,7 @@ const ActiveGame = ({route}) => {
 
     const [targetList, setTargetList] = useState([]);
     const [targetCount, setTargetCount] = useState(0);
-    const [awokenRole, setAwokenRole] = useState(false)
+    const [awokenRole, setAwokenRole] = useState("")
 
     const [chats, setChats] = useState({day: { id:"0", messages:[], cycle: 0}, ww: {}, vamp: {}})
     const [votes, setVotes] = useState({day: {id: 0, ballot: []}, ww: {}, vamp: {}})
@@ -72,7 +63,7 @@ const ActiveGame = ({route}) => {
 
             if(message.type === 'DISCONNECT') {
                 if(message.content.player !== username){
-                    setNotificationQueue([...notificationQueue, message.content.player + " has disconnected!"])
+                    setNotificationQueue(q => [...q, message.content.player + " has disconnected!"])
                 }
             
             } else if (message.type === 'NOTIFY') {
@@ -81,11 +72,11 @@ const ActiveGame = ({route}) => {
                 if (message.content.role === 'targeter') {
                     setTargetList(message.content.list);
                     setTargetCount(message.content.targetCount);
-                    setAwokenRole(message.content.awokenRole)
                 } else {
                     setTargetCount(0);
                 }
-                setMessageQueue([...messageQueue, message.content.message])
+                setAwokenRole(message.content.awokenRole)
+                setMessageQueue(q => [...q, message.content.message])
             } else if (message.type === 'CHAT') {
                 let newMessages = message.content.messages
                 newMessages.reverse()
@@ -116,7 +107,7 @@ const ActiveGame = ({route}) => {
             } else if (message.type === 'DAY') {
                 setDay(true)
                 setPlayers(message.content.players)
-                setChats({ day: { id: message.content.id, cycle: message.content.cycle }, ww: chats.ww, vamp: chats.vamp})
+                setChats({ day: { id: message.content.chat, cycle: message.content.cycle }, ww: chats.ww, vamp: chats.vamp})
                 setVotes({day: message.content.vote, ww: {}, vamp: {}})
 
                 let summaryStr = "SUMMARY\n"
@@ -129,7 +120,7 @@ const ActiveGame = ({route}) => {
                     alert("You have been killed!")
                     logout()
                 } else {
-                    setNotificationQueue([...notificationQueue, message.content.message, summaryStr])
+                    setNotificationQueue(q => [...q, message.content.message, summaryStr])
                 }
         
             } else if (message.type === 'NIGHT') {
@@ -149,7 +140,7 @@ const ActiveGame = ({route}) => {
                 setVotes({day: message.content, ww: {}, vamp: {}})
             } else if (message.type === 'LYNCH') {
                 const lynchMessage = `Player ${message.content.lynched} has been lynched.`
-                setNotificationQueue([...notificationQueue, lynchMessage])
+                setNotificationQueue(q => [...q, lynchMessage])
                 if (message.content.lynched === username) {
                     logout();
                 }
@@ -180,11 +171,11 @@ const ActiveGame = ({route}) => {
     }, [])
 
     useEffect(() => {
-
-        console.log(chats)
         showNextNotification()
-    
-    }, [notificationQueue, messageQueue, multipleWakeModalContent, chats])
+    }, [notificationQueue])
+
+    useEffect(() => {
+    }, [multipleWakeModalContent, chats, messageQueue])
 
     const showNextNotification = () => {
         if (notificationQueue.length > 0) {
@@ -207,7 +198,7 @@ const ActiveGame = ({route}) => {
     const validateResponse = (data) => {
         if (data.type == "ERROR") {
             console.log("Validation error!")
-            setNotificationQueue([...notificationQueue, `Error ${data.content.code}: ${data.content.error}!`])
+            setNotificationQueue(q => [...q, `Error ${data.content.code}: ${data.content.error}!`])
             return false
         }
         return true

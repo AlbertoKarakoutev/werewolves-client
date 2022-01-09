@@ -74,6 +74,9 @@ const Lobby = ({ route }) => {
         stompClient.connect({}, onConnected, () => {} )
     }, [])
 
+    useEffect(() => {
+    }, [players])
+
     const logout = () => {
         if(stompClient !== null && stompClient !== undefined){
             stompClient.unsubscribe();

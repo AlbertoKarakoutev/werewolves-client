@@ -14,7 +14,7 @@ const Chat = ( props ) => {
     const sender = props.sender
     const height = (props.height !== null) ? props.height : '47%'
     const data = props.data
-    const gameID = props.gameID
+    const gameID = props.gameId
 
     const [open, setOpen] = useState(true)
     const width = useRef(new Animated.Value(0)).current

@@ -50,7 +50,7 @@ async function createGameRequest(players) {
 }
 
 async function readyRequest(username, gameID) {
-    let res = await fetch(`${host}/lobby/user/ready/`,{
+    let res = await fetch(`${host}/lobby/user/ready`,{
         method: "PUT", 
         headers: {
             "Content-Type": "application/json"
@@ -166,7 +166,7 @@ async function answer(gameID, username, roleName, a) {
     return data
 }
 
-async function wokenUp(gameID) {
+async function wokenUp(gameID, role) {
     let res = await fetch(`${host}/game/wokenUp`,{
         method: "POST", 
         headers: {
@@ -175,7 +175,8 @@ async function wokenUp(gameID) {
         body:JSON.stringify(
             {
                 content: {
-                    gameId: gameID
+                    gameId: gameID,
+                    role: role
                 }
             }
         )

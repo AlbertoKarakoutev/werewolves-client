@@ -62,8 +62,10 @@ const rootStyle = StyleSheet.create({
     disabledText:{
         fontSize: textFontSize,
         fontWeight: 'bold',
+        textTransform: 'uppercase',
         margin:"2%",
         color:"#777",
+        fontFamily:'sans-serif-thin',
     },
     smallDisabledText:{
         fontSize: smallTextFontSize,

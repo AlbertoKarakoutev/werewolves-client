@@ -26,9 +26,14 @@ const MessageModal = (props) => {
     const messageIndex = useRef(0)
 
     useEffect(() => {
-        showNextMessage()
+        if (visible == false) {
+            showNextMessage()
+        }
 
     }, [messageQueue])
+
+    useEffect(() => {
+    }, [visible])
 
     const renderByType = () => {
 
@@ -83,7 +88,11 @@ const MessageModal = (props) => {
             setTargetRequest(awokenRole, gameID, parsedTargets).then(data => {
                 validateResponse(data)
             })
-        } 
+        } else {
+            wokenUp(gameID, awokenRole).then(data => {
+                validateResponse(data)
+            })
+        }
     }
 
     const validateResponse = (data) => {
