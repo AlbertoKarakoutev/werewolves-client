@@ -17,7 +17,7 @@ const MultipleWakeModal = (props) => {
 
     useEffect(() => {
 
-    }, [data])
+    }, [data, visible])
 
     const renderTitle = () => {
         if (data == undefined)
@@ -34,9 +34,13 @@ const MultipleWakeModal = (props) => {
             <ModalContent style={styles.modal}>
                 {(Object.keys(data).length !== 0)
                     ? <View style={{flex: 1}}>
-                        <Text style={rootStyle.centeredText}>{renderTitle()}</Text>
-                        <Vote voter={username} data={data.vote} gameID={gameID} targetCount={data.targetCount}/>
-                        <Chat sender={username} data={data.chat} gameID={gameID} height={"60%"}/>
+                        <Text style={{...rootStyle.centeredText, ...{fontSize:30}}}>- {renderTitle()} -</Text>
+                        <Text style={{...rootStyle.centeredText, ...{fontSize: 10}}}>Voter: {data.voter}</Text>
+                        {(data.voter === username) 
+                            ? <Vote voter={username} data={data.vote} gameID={gameID} targetCount={data.targetCount}/>
+                            : <Text/>
+                        }
+                        <Chat sender={username} data={data.chat} gameId={gameID}/>
                     </View>
                     : <Text/>}
             </ModalContent>

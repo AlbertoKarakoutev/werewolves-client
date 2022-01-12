@@ -12,7 +12,7 @@ import { sendChatMessage } from '../../scripts/functions.js'
 const Chat = ( props ) => {
 
     const sender = props.sender
-    const height = (props.height !== null) ? props.height : '47%'
+    const height = (props.height !== null) ? props.height : 'auto'
     const data = props.data
     const gameID = props.gameId
 
@@ -39,7 +39,6 @@ const Chat = ( props ) => {
 
     const styles = {
         chat: {
-            display: 'flex',
             margin:'2%',
             height: height,
             borderRadius:5,
@@ -76,7 +75,7 @@ const Chat = ( props ) => {
         },
         myChatMessage: {
             display: 'flex',
-            backgroundColor: '#4e2866',
+            backgroundColor: '#7a3da1',
             borderRadius:5,
             padding: '1%',
             margin: '1%',

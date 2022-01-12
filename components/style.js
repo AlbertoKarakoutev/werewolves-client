@@ -1,7 +1,7 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
 const titleFontSize = Dimensions.get('window').width / 12
-const textFontSize = Dimensions.get('window').height / 35
+const textFontSize = Dimensions.get('window').height / 45
 const smallTextFontSize = Dimensions.get('window').width / 30
 
 const bg = "#2f173d"

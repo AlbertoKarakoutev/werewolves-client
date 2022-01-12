@@ -11,7 +11,7 @@ import { sendVote } from '../../scripts/functions.js'
 
 const Vote = ( props ) => {
 
-    const data = props.data
+    const data = (props.data.votees === undefined) ? {votees: []} : props.data
     const gameID = props.gameID
     const voter = props.voter
     const targetCount = props.targetCount
@@ -23,82 +23,55 @@ const Vote = ( props ) => {
 
     }, [btnVisible, selected])
 
+
     const markSelected = (selectedName, selectedPosition) => {
+
         setBtnVisible(true)
-        let newSelected;
-        if (selectedPosition == 0) {
-            if (selected[1] !== selectedName) {
-                newSelected = [selectedName, selected[1]]
-            } else {
-                newSelected = [selectedName, ""]
-            }
+        let newSelected = [...selected]
+        if (newSelected.includes(selectedName)) {
+            let index = newSelected.indexOf(selectedName)
+            newSelected.splice(index, 1)
         } else {
-            if (selected[0] !== selectedName) {
-                newSelected = [selected[0], selectedName]
+            if (newSelected[0] === "" || newSelected[0] === undefined) {
+                newSelected[0] = selectedName
             } else {
-                newSelected = ["", selectedName]
+                if (targetCount > 1) {
+                    newSelected[1] = selectedName
+                } else {
+                    newSelected[0] = selectedName
+                }
+                
             }
         }
-
-        setSelected(newTarget)
-    }
-
-    const renderDots = (numberOfDots) => {
-        const dots = Array(numberOfDots)
-        dots.fill(<FontAwesomeIcon icon={faCircle} color="#0000ff" size={20}/>)
-        return dots
-    }
-
-    const renderElement = (name, elementNumber) => {
-        return (
-            <Pressable onPress={() => markSelected(name, elementNumber)} style={styles.selected}>
-                <View>
-                    <Text style={rootStyle.smallText}> {name} </Text>
-                    {(data.type != "LYNCH")
-                        ? renderDots(data.ballot[name])
-                        : (<Text/>)
-                    }
-                </View>
-                {(selected[elementNumber].includes(name)) ? <FontAwesomeIcon icon={faCheckSquare} color="#ff0000" size={20}/> : <Text></Text>}
-            </Pressable>
-        )
-    }
-
-    const renderByCount = () => {
-
-        const list = (number) => {
-            return (
-                <View style={{flexDirection: 'column', flex: 1, height: 200}}>
-                    <Text style={rootStyle.smallText}>Target {number+1}</Text>
-                    <FlatList keyExtractor={(item, index) => index.toString()} style={styles.list} data={data.votees} renderItem={({item, index}) => 
-                        {renderElement(item, number)}
-                    }/>
-                </View>
-            )
-        }
+        if (targetCount == 1) {
+            if (newSelected[0] === undefined || newSelected[0] === "") {
+                setBtnVisible(false)
+            }
+        } else if (targetCount == 2) {
+            if (newSelected[0] === undefined || newSelected[0] === "" || newSelected[1] === undefined || newSelected[1] === "") {
+                setBtnVisible(false)
+            }
+        } 
         
-        if (targetCount === 1) {
-            return (
-                <View style={{flexDirection: 'row', display: 'flex'}}>
-                    {list(0)}
-                </View>
+        setSelected(newSelected)
+    }
+
+    const renderElements = () => {
+        let elements = []
+        data.votees.forEach(votee => {
+            let index = data.votees.indexOf(votee)
+            elements.push(
+                <Pressable key={index} onPress={() => markSelected(votee, index)} style={styles.selected}>
+                    <Text style={styles.text}> {votee} </Text>
+                    {(selected.includes(votee)) ? <FontAwesomeIcon icon={faCheckSquare} color="#ff0000" size={20}/> : <Text></Text>}
+                </Pressable>
             )
-        } else if (targetCount === 2) {
-            return (
-                <View style={{flexDirection: 'row', display: 'flex'}}>
-                    {list(0)}
-                    {list(1)}
-                </View>
-            )
-        }
+        })
+        return elements;
     }
 
     const parseAndSend = () => {
         if (targetCount > 1) {
-            if (selected[1] === "") {
-                alert("Please select 2 targets!")
-                return
-            }
             sendVote(gameID, data.id, voter, selected[0] + "_" + selected[1])
         } else {
             sendVote(gameID, data.id, voter, selected[0])
@@ -108,9 +81,13 @@ const Vote = ( props ) => {
     return (
         <View style={styles.voteTab}>
             <Text style={rootStyle.smallText}>Cast your vote</Text>
-            {renderByCount()}
+            <View style={styles.voteList}>
+                {renderElements()}
+            </View>
             <Button visible={btnVisible} style={rootStyle.smallButton} onPress={() => {
-                // setBtnVisible(false)
+                if (data.type === 'lynch') {
+                    setBtnVisible(false)
+                }
                 parseAndSend()
             }}>SEND</Button>
         </View>
@@ -122,27 +99,36 @@ export default Vote;
 
 const styles = {
     voteTab: {
-        flexDirection: 'column',
-        height: '30%',
-        width: '96%',
+        justifyContent: 'space-between',
+        flex: 1,
         backgroundColor: '#1c0e24',
         borderRadius:5,
         margin: '2%'
     },
+    voteList: {
+        flex: 1,
+        height: '100%',
+    },
     selected: {
-        display:'flex',
-        flexDirection:'row',
-        justifyContent:'space-between',
-        padding: 2,
-        margin: 2,
+        flex: 0.2,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingLeft: 10,
+        paddingRight: 10,
+        marginTop: 5,
+        height: '10%',
+        minHeight: 20,
         alignItems: 'center',
+        borderRadius: 5,
         backgroundColor: "#9d0aff",
         borderBottomColor:'white',
-        borderBottomWidth:1,
-        borderTopColor:'white',
-        borderTopWidth:0.5,
+        borderBottomWidth: 5,
     },
     list: {
         flex: 1
     },
+    text: {
+        fontSize: Dimensions.get('window').height / 40, 
+        color: 'white',
+    }
 }

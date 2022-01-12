@@ -1,10 +1,10 @@
 import React from 'react';
-import {useState, useEffect, useRef, useCallback} from 'react';
-import { FlatList, View, Text, Pressable, Image, Dimensions } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, Image, Dimensions, ActivityIndicator } from 'react-native';
 
 import { BottomModal, Modal, ModalContent, ScaleAnimation } from 'react-native-modals';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { faCheckSquare, faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
+import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 import { useNavigation } from '@react-navigation/native';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
@@ -29,6 +29,7 @@ const ActiveGame = ({route}) => {
     const [roles, setRoles ] = useState({active: {sprite: "", name: ""}, passive: {sprite: "", name: ""}});
     
     const [day, setDay] = useState(false)
+    const [summary, setSummary] = useState({})
 
     const [notificationModalVisible, setNotificationModalVisible] = useState(false)
     const [notificationModalContent, setNotificationModalContent] = useState("")
@@ -37,15 +38,16 @@ const ActiveGame = ({route}) => {
     const [questionModalVisible, setQuestionModalVisible] = useState(false)
     const [questionModalContent, setQuestionModalContent] = useState({question: "", active:  false})
     const [multipleWakeModalVisible, setMultipleWakeModalVisible] = useState(false)
-    const [multipleWakeModalContent, setMultipleWakeModalContent] = useState({chat: {}})
+    const [multipleWakeModalContent, setMultipleWakeModalContent] = useState({chat: {}, vote: {}, message: "", targetCount: 0, voter: ""})
+    const [sleepBtnVisible, setSleepBtnVisible] = useState(false)
 
-    const [targetList, setTargetList] = useState([]);
-    const [targetCount, setTargetCount] = useState(0);
     const [awokenRole, setAwokenRole] = useState("")
 
-    const [chats, setChats] = useState({day: { id:"0", messages:[], cycle: 0}, ww: {}, vamp: {}})
-    const [votes, setVotes] = useState({day: {id: 0, ballot: []}, ww: {}, vamp: {}})
+    const [dayChat, setDayChat] = useState({id:"0", messages:[], cycle: 0})
+    const [votes, setVotes] = useState({day: {id: 0}, ww: {}, vamp: {}})
     const [players, setPlayers] = useState([])
+
+    console.log(multipleWakeModalContent)
 
     let sock = new SockJS(`${host}/handshake`);
     let stompClient = Stomp.over(sock);
@@ -69,48 +71,47 @@ const ActiveGame = ({route}) => {
             } else if (message.type === 'NOTIFY') {
                 setNotificationQueue([...notificationQueue, message.content.message])
             } else if (message.type === 'WAKE') {
-                if (message.content.role === 'targeter') {
-                    setTargetList(message.content.list);
-                    setTargetCount(message.content.targetCount);
-                } else {
-                    setTargetCount(0);
-                }
                 setAwokenRole(message.content.awokenRole)
-                setMessageQueue(q => [...q, message.content.message])
+                const list = (message.content.list === undefined) ? [] : message.content.list;
+                const count = (message.content.targetCount === undefined) ? 0 : message.content.targetCount;
+                const awokenRole = message.content.awokenRole
+                let messageObj = {message: message.content.message, targetList: list, targetCount: count, awokenRole: awokenRole}
+                setMessageQueue(q => [...q, messageObj])
             } else if (message.type === 'CHAT') {
                 let newMessages = message.content.messages
                 newMessages.reverse()
-                if (message.content.type === "ww") {
-                    let temp = multipleWakeModalContent
-                    temp.chat = message.content
-                    setMultipleWakeModalContent(temp)
-                    setChats({ day: chats.day, ww: message.content, vamp: chats.vamp })
+                if (message.content.type === "ww" || message.content.type === "vamp") {
+                    let newContent = {
+                        chat: message.content,
+                        message: {...multipleWakeModalContent.message},
+                        targetCount: {...multipleWakeModalContent.targetCount},
+                        vote: {...multipleWakeModalContent.vote},
+                        voter: {...multipleWakeModalContent.voter}
+                    }
+                    setMultipleWakeModalContent(c => ({
+                        chat: message.content,
+                        message: c.message,
+                        targetCount: c.targetCount,
+                        vote: c.vote,
+                        voter: c.voter
+                    }))
                 } else if (message.content.type === "day") {
-
-                    setChats({
-                         day: {
-                            id: message.content.id,
-                            messages: newMessages,
-                            type: message.content.type,
-                            cycle: message.content.cycle
-                         },
-                         ww: chats.ww, vamp: 
-                         chats.vamp
-                        })
-                } else if (message.content.type === "vamp") {
-                    let temp = multipleWakeModalContent
-                    temp.chat = message.content
-                    setMultipleWakeModalContent(temp)
-                    setChats({ day: chats.day, ww: chats.ww, vamp: message.content})
+                    setDayChat({
+                        id: message.content.id,
+                        messages: newMessages,
+                        type: message.content.type,
+                        cycle: message.content.cycle
+                    })
                 }
-
             } else if (message.type === 'DAY') {
                 setDay(true)
+                setSummary(message.content.summary)
                 setPlayers(message.content.players)
-                setChats({ day: { id: message.content.chat, cycle: message.content.cycle }, ww: chats.ww, vamp: chats.vamp})
+                setDayChat({ id: message.content.chat, cycle: message.content.cycle })
                 setVotes({day: message.content.vote, ww: {}, vamp: {}})
+                setSleepBtnVisible(true)
 
-                let summaryStr = "SUMMARY\n"
+                let summaryStr = "SUMMARY\n\n"
                 summaryStr += "Dead: " + ((message.content.summary.dead.length == 0) ? 'No one' : message.content.summary.dead) + "\n"
                 summaryStr += "Hagged: " + ((message.content.summary.hagged === undefined) ? 'No one' : message.content.summary.hagged) + "\n"
                 summaryStr += "Silenced: " + ((message.content.summary.silenced == undefined) ? 'No one' : message.content.summary.silenced) + "\n"
@@ -125,7 +126,6 @@ const ActiveGame = ({route}) => {
         
             } else if (message.type === 'NIGHT') {
                 setDay(false)
-                setTargetList([])
                 setNotificationQueue([...notificationQueue, message.content.message])
             } else if (message.type === 'ROLES') {
                 let roles = {
@@ -171,11 +171,13 @@ const ActiveGame = ({route}) => {
     }, [])
 
     useEffect(() => {
-        showNextNotification()
+        if (!notificationModalVisible) {
+            showNextNotification()
+        }
     }, [notificationQueue])
 
     useEffect(() => {
-    }, [multipleWakeModalContent, chats, messageQueue])
+    }, [multipleWakeModalContent, dayChat, messageQueue])
 
     const showNextNotification = () => {
         if (notificationQueue.length > 0) {
@@ -197,7 +199,7 @@ const ActiveGame = ({route}) => {
 
     const validateResponse = (data) => {
         if (data.type == "ERROR") {
-            console.log("Validation error!")
+            console.log("Validation error!", `Error ${data.content.code}: ${data.content.error}!`)
             setNotificationQueue(q => [...q, `Error ${data.content.code}: ${data.content.error}!`])
             return false
         }
@@ -207,7 +209,7 @@ const ActiveGame = ({route}) => {
     const logout = () => {
         if(stompClient !== null && stompClient !== undefined){
             stompClient.unsubscribe();
-            stompClient.send(`/app/game/users/logout/${gameID}`,{},JSON.stringify({sender: username, type: 'DISCONNECT'}))
+            stompClient.send(`/app/game/users/loMessageUtil.emptyMessage().without/${gameID}`,{},JSON.stringify({sender: username, type: 'DISCONNECT'}))
             navigation.navigate("Join");
         }
     }
@@ -226,22 +228,26 @@ const ActiveGame = ({route}) => {
             </View>
 
             <View style={{flex: 1, display: 'flex', flexDirection: 'row', alignItems: 'center', margin: '2%', marginBottom: 0}}>
-                {(day) 
-                    ? <Chat gameId={gameID} data={chats.day} height={'95%'} sender={username}/>
+                {(day && summary.silenced !== username && summary.hagged !== username) 
+                    ? <Chat gameId={gameID} data={dayChat} height={'95%'} sender={username}/>
                     : <Text/>
                 }
                 <View style={styles.info}>
                     <View>
-                        <Text style={rootStyle.text}>{(chats.day.cycle !== null) ? `Day: ${chats.day.cycle}` : ""}</Text>
+                        <Text style={rootStyle.text}>{(dayChat.cycle !== null) ? `Day: ${dayChat.cycle}` : ""}</Text>
                         <Text style={rootStyle.text}>{(players.length != 0) ? `Remaining players: ${players}` : ""}</Text>
                     </View>
-                    {(day) 
-                        ? <Vote gameID={gameID} voter={username} data={votes.day}/>
+                    {(day && summary.hagged !== username) 
+                        ? <Vote gameID={gameID} voter={username} data={votes.day} targetCount={1}/>
                         : <Text/>
                     }
-                    <View style={{display: 'flex', flexDirection: 'row'}}>
-                        <Button visible={day} style={{...rootStyle.button, ...{ width: '70%' }}} onPress={readyToSleep}>Sleep</Button>
-                        <Button style={{...rootStyle.button, ...{ width: '17%'}}} onPress={logout}><FontAwesomeIcon icon={faSignOutAlt} color="#ff0000" size={30}/></Button>
+                    <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                        <Button visible={sleepBtnVisible} style={{...rootStyle.button, ...{ width: '70%' }}} onPress={() => {
+                            readyToSleep()
+                            setSleepBtnVisible(false)
+                        }}>Sleep</Button>
+                        {(!sleepBtnVisible && day) ? <ActivityIndicator size={Dimensions.get('window').width / 5} color="#69237d"/> : <Text/>}
+                        <Button style={{...rootStyle.button, ...{ width: '17%', aspectRatio: 1}}} onPress={logout}><FontAwesomeIcon icon={faSignOutAlt} color="#ff0000" size={30}/></Button>
                     </View>
                 </View>
             </View>
@@ -259,7 +265,7 @@ const ActiveGame = ({route}) => {
                     </ModalContent>
             </Modal>
 
-            <MessageModal gameID={gameID} awokenRole={awokenRole} targetCount={targetCount} targetList={targetList} messageQueue={messageQueue}/>
+            <MessageModal gameID={gameID} messageQueue={messageQueue}/>
             
             <MultipleWakeModal 
                 username={username}
@@ -314,16 +320,17 @@ const styles = {
        display:'flex',
        position: 'relative',
        flexDirection: 'row',
-       justifyContent: 'space-between',
+       justifyContent: 'space-evenly',
        alignItems: 'center',
        height: '38%',
        borderBottomColor: 'white',
-       borderBottomWidth: 1
+       borderBottomWidth: 1,
+       paddingBottom: 10,
     },
     card: {
-        width: '48%',
+        aspectRatio: 0.7,
+        maxWidth: '40%',
         height: '84%',
-        marginTop: '-6%',
         shadowColor: 'white',
         shadowRadius: 20,
         textAlign: 'center'
@@ -335,7 +342,7 @@ const styles = {
         margin: '2%'
     },
     cardText: {
-        fontSize: 24, 
+        fontSize: Dimensions.get('window').width / 20, 
         color: 'white', 
         textAlign: 'center',
         position: 'relative'
@@ -372,9 +379,8 @@ const styles = {
         flex: 1
     },
     info: {
-        flex: 1,
+        width: Dimensions.get('window').width / 1.2,
         position: 'relative',
-        minWidth: 300,
         height: '94%',
         flexDirection: 'column',
         justifyContent: 'space-between'

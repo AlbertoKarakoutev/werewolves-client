@@ -22,12 +22,10 @@ const Welcome = () => {
     }
 
     const joinGameWithServerCheck = async () => {
-        console.log("false")
-        // let res = await fetch(`${host}/ping`).catch((error) => {
-        //     console.log(error)
-        //     setModalVisible(true);
-        // });
-        // if(res === undefined) return;
+        let res = await fetch(`${host}/ping`).catch((error) => {
+            setModalVisible(true);
+        });
+        if(res === undefined) return;
         navigation.navigate('Join')
     }
 

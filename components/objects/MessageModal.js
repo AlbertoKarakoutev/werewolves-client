@@ -13,86 +13,92 @@ import { setTargetRequest, wokenUp } from '../../scripts/functions.js'
 const MessageModal = (props) => {
 
     const messageQueue = props.messageQueue
+    const messageIndex = useRef(0)
 
     const [visible, setVisible] = useState(false)
     const [content, setContent] = useState("")
+    const [targetList, setTargetList] = useState([])
+    const [targetCount, setTargetCount] = useState(0)
+    const [awokenRole, setAwokenRole] = useState("")
     const [target, setTarget] = useState(["", ""])
+    const [targetBtnVisible, setTargetBtnVisible] = useState(false)
 
     const gameID = props.gameID
-    const awokenRole = props.awokenRole
-    const targetList = props.targetList
-    const targetCount = props.targetCount
-
-    const messageIndex = useRef(0)
 
     useEffect(() => {
-        if (visible == false) {
+
+        if ((!visible && messageQueue.length > messageIndex.current+1) || messageQueue.length == 1) {
             showNextMessage()
         }
-
     }, [messageQueue])
 
     useEffect(() => {
     }, [visible])
 
     const renderByType = () => {
-
-        const list = (number) => {
-            return (
-                <View style={{flexDirection: 'column', flex: 1, height: 200}}>
-                    <Text style={rootStyle.smallText}>Target {number+1}</Text>
-                    <FlatList style={styles.list} keyExtractor={(item, index) => index.toString()} data={targetList} renderItem={({item, index}) => 
-                        <Pressable onPress={() => markTarget(item, number)} style={styles.target}>
-                            <Text style={rootStyle.text}> {item} </Text>
-                            {(target[number].includes(item)) ? <FontAwesomeIcon icon={faCheckSquare} color="#ff0000" size={40}/> : <Text></Text>}
-                        </Pressable>
-                    }/>
-                </View>
-            )
-        }
-        
         if (targetCount == 0) {
             return (
                 <Text/>
             )
-        } else if (targetCount === 1) {
+        } else {
             return (
-                <View style={{flexDirection: 'row', display: 'flex'}}>
-                    {list(0)}
+                <View style={{flexDirection: 'column', minHeight: 300}}>
+                    <FlatList style={styles.list} keyExtractor={(item, index) => index.toString()} data={targetList} renderItem={({item, index}) => 
+                        <Pressable onPress={() => markTarget(item)} style={styles.target}>
+                            <Text style={rootStyle.text}> {item} </Text>
+                            {(target.includes(item)) ? <FontAwesomeIcon icon={faCheckSquare} color="#ff0000" size={30}/> : <Text></Text>}
+                        </Pressable>
+                    }/>
                 </View>
             )
-        } else if (targetCount === 2) {
-            return (
-                <View style={{flexDirection: 'row', display: 'flex'}}>
-                    {list(0)}
-                    {list(1)}
-                </View>
-            )
-        }
+        } 
     }
 
     const showNextMessage = () => {
-        if (messageQueue.length > messageIndex.current) {
-            setContent(messageQueue[messageIndex.current]);
+        if (messageQueue.length > 1) {
             messageIndex.current += 1;
-            setVisible(true)
-        } else {
-            setVisible(false)
         }
+        setContent(messageQueue[messageIndex.current].message);
+        setTargetList(messageQueue[messageIndex.current].targetList);
+        setTargetCount(messageQueue[messageIndex.current].targetCount);
+        setAwokenRole(messageQueue[messageIndex.current].awokenRole)
+        setTargetBtnVisible(messageQueue[messageIndex.current].targetCount == 0)
+        setVisible(true)
     }
 
     const modalAction = () => {
-        showNextMessage()
-        if (targetList.length != 0) {
+        if (targetList.length > 0) {
+            if (targetCount == 1) {
+                if (target[0] === undefined || target[0] === "") {
+                    alert("Please select a target!")
+                    return
+                }
+            } else if (targetCount == 2) {
+                if ((target[0] === undefined || target[0] === "") && (target[1] === undefined || target[1] === "")) {
+                    alert("Please select 2 targets!")
+                    return
+                }
+            } 
+        }
+
+        if (targetList.length > 0) {
             const parsedTargets = (targetCount > 1) ? target[0] + "_" + target[1] : target[0];
             setTargetRequest(awokenRole, gameID, parsedTargets).then(data => {
                 validateResponse(data)
+                setTarget([])
             })
         } else {
             wokenUp(gameID, awokenRole).then(data => {
                 validateResponse(data)
             })
         }
+
+        if (messageQueue.length > messageIndex.current+1) {
+            showNextMessage()
+        } else {
+            setVisible(false)
+        }
+
     }
 
     const validateResponse = (data) => {
@@ -103,19 +109,36 @@ const MessageModal = (props) => {
         return true
     }
 
-    const markTarget = (targetName, targetPosition) => {
-        let newTarget;
-        if (targetPosition == 0) {
-            if (target[1] !== targetName) {
-                newTarget = [targetName, target[1]]
-            } else {
-                newTarget = [targetName, ""]
-            }
+    const markTarget = (targetName) => {
+        if (messageQueue.length == 0) 
+            return
+
+        setTargetBtnVisible(true)
+        let newTarget = [...target]
+        if (newTarget.includes(targetName)) {
+            let index = newTarget.indexOf(targetName)
+            newTarget.splice(index, 1)
         } else {
-            if (target[0] !== targetName) {
-                newTarget = [target[0], targetName]
+            if (newTarget[0] === "" || newTarget[0] === undefined) {
+                newTarget[0] = targetName
             } else {
-                newTarget = ["", targetName]
+                if (targetCount > 1) {
+                    newTarget[1] = targetName
+                } else {
+                    newTarget[0] = targetName
+                }
+                
+            }
+        }
+        if (targetList.length > 0) {
+            if (targetCount == 1) {
+                if (newTarget[0] === undefined || newTarget[0] === "") {
+                    setTargetBtnVisible(false)
+                }
+            } else if (targetCount == 2) {
+                if (newTarget[0] === undefined || newTarget[0] === "" || newTarget[1] === undefined || newTarget[1] === "") {
+                    setTargetBtnVisible(false)
+                }
             }
         }
 
@@ -125,9 +148,10 @@ const MessageModal = (props) => {
     return  (
         <BottomModal visible={visible} width={1}>
             <ModalContent style={rootStyle.bottomModal}>
+                <Text style={{...rootStyle.centeredText, ...{fontSize:30}}}>- {awokenRole.replace("_", " ")} -</Text>
                 <Text style={rootStyle.centeredText}>{content}</Text>
                 {renderByType()}
-                <Button onPress={modalAction}>{(targetList.length == 0) ? "OK" : "SEND"}</Button>
+                <Button visible={targetBtnVisible} onPress={modalAction}>{(targetList.length == 0) ? "OK" : "SEND"}</Button> 
             </ModalContent>
         </BottomModal>
     )
@@ -140,14 +164,13 @@ const styles = {
         display:'flex',
         flexDirection:'row',
         justifyContent:'space-between',
+        padding: 5,
+        margin: 2,
         paddingTop: 2,
         paddingBottom: 2,
-        borderRadius: 5,
+        borderRadius: 3,
         alignItems: 'center',
         backgroundColor: "#9d0aff",
-        borderColor:'white',
-        borderWidth:1,
-        borderTopWidth: 0,
     },
     list: {
         flex: 1,
