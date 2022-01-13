@@ -45,7 +45,6 @@ const rootStyle = StyleSheet.create({
     },
     centeredText:{
         fontSize: textFontSize,
-        width: Dimensions.get('window').width * (85/100),
         textTransform: 'uppercase',
         fontWeight: 'bold',
         margin:"2%",
@@ -122,7 +121,7 @@ const rootStyle = StyleSheet.create({
     bottomModal:{
         backgroundColor:modalBg,
         flexDirection:'column',
-        justifyContent:'center'
+        justifyContent:'center',
     }
 });
 

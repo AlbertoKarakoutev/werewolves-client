@@ -79,18 +79,38 @@ const Vote = ( props ) => {
     }
 
     return (
-        <View style={styles.voteTab}>
-            <Text style={rootStyle.smallText}>Cast your vote</Text>
-            <View style={styles.voteList}>
-                {renderElements()}
+        <>
+            {(data.type != 'lynch')
+                ?
+                    <View style={styles.targetLabels}>
+                        <View style={styles.targetLabel}>
+                            <Text style={rootStyle.smallDisabledText}>TARGET 1</Text>
+                            <Text style={rootStyle.centeredText}>{selected[0]}</Text>
+                        </View>
+                        {(targetCount > 1)
+                            ?  <View style={styles.targetLabel}>
+                                    <Text style={rootStyle.smallDisabledText}>TARGET 2</Text>
+                                    <Text style={rootStyle.centeredText}>{selected[1]}</Text>
+                                </View>
+                            : <></>
+                        }
+                        
+                    </View>
+                : <Text/>
+            }   
+            <View style={styles.voteTab}>
+                <Text style={rootStyle.smallText}>Cast your vote</Text>
+                <View style={styles.voteList}>
+                    {renderElements()}
+                </View>
+                <Button visible={btnVisible} style={rootStyle.smallButton} onPress={() => {
+                    if (data.type === 'lynch') {
+                        setBtnVisible(false)
+                    }
+                    parseAndSend()
+                }}>SEND</Button>
             </View>
-            <Button visible={btnVisible} style={rootStyle.smallButton} onPress={() => {
-                if (data.type === 'lynch') {
-                    setBtnVisible(false)
-                }
-                parseAndSend()
-            }}>SEND</Button>
-        </View>
+        </>
     )
 
 }
@@ -130,5 +150,20 @@ const styles = {
     text: {
         fontSize: Dimensions.get('window').height / 40, 
         color: 'white',
+    },
+    targetLabels: {
+        flexDirection: 'row',
+        width: '100%',
+        justifyContent: 'space-evenly',
+        background: 'red'
+    },
+    targetLabel: {
+        display: 'flex',
+        borderRadius: 5,
+        borderColor: 'white',
+        borderWidth: 1,
+        flex: 1,
+        maxWidth: '40%',
+        backgroundColor: '#1c0e24',
     }
 }

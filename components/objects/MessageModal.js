@@ -62,7 +62,7 @@ const MessageModal = (props) => {
         setTargetList(messageQueue[messageIndex.current].targetList);
         setTargetCount(messageQueue[messageIndex.current].targetCount);
         setAwokenRole(messageQueue[messageIndex.current].awokenRole)
-        setTargetBtnVisible(messageQueue[messageIndex.current].targetCount == 0)
+        setTargetBtnVisible(messageQueue[messageIndex.current].targetCount == 0 || awokenRole === 'WITCH')
         setVisible(true)
     }
 
@@ -117,7 +117,7 @@ const MessageModal = (props) => {
         let newTarget = [...target]
         if (newTarget.includes(targetName)) {
             let index = newTarget.indexOf(targetName)
-            newTarget.splice(index, 1)
+            newTarget[index] = ""
         } else {
             if (newTarget[0] === "" || newTarget[0] === undefined) {
                 newTarget[0] = targetName
@@ -142,6 +142,10 @@ const MessageModal = (props) => {
             }
         }
 
+        if (awokenRole === 'WITCH') {
+            setTargetBtnVisible(true)
+        }
+
         setTarget(newTarget)
     }
 
@@ -149,9 +153,27 @@ const MessageModal = (props) => {
         <BottomModal visible={visible} width={1}>
             <ModalContent style={rootStyle.bottomModal}>
                 <Text style={{...rootStyle.centeredText, ...{fontSize:30}}}>- {awokenRole.replace("_", " ")} -</Text>
+                {(targetCount > 0)
+                    ?
+                        <View style={styles.targetLabels}>
+                            <View style={styles.targetLabel}>
+                                {(awokenRole === 'WITCH') ? <Text style={rootStyle.smallDisabledText}>HEAL</Text> : <Text style={rootStyle.smallDisabledText}>TARGET 1</Text>}
+                                <Text style={rootStyle.centeredText}>{target[0]}</Text>
+                            </View>
+                            {(targetCount > 1)
+                                ?  <View style={styles.targetLabel}>
+                                        {(awokenRole === 'WITCH') ? <Text style={rootStyle.smallDisabledText}>KILL</Text> : <Text style={rootStyle.smallDisabledText}>TARGET 2</Text>}
+                                        <Text style={rootStyle.centeredText}>{target[1]}</Text>
+                                    </View>
+                                : <></>
+                            }
+                            
+                        </View>
+                    : <Text/>
+                }   
                 <Text style={rootStyle.centeredText}>{content}</Text>
                 {renderByType()}
-                <Button visible={targetBtnVisible} onPress={modalAction}>{(targetList.length == 0) ? "OK" : "SEND"}</Button> 
+                <Button visible={targetBtnVisible} onPress={modalAction}>{(targetList.length == 0) ? "OK" : "SEND"}</Button>
             </ModalContent>
         </BottomModal>
     )
@@ -173,11 +195,25 @@ const styles = {
         backgroundColor: "#9d0aff",
     },
     list: {
-        flex: 1,
         borderRadius: 5,
         backgroundColor: '#1c0e24',
         margin: 2,
         padding: 2,
         height:100
     },
+    targetLabels: {
+        flexDirection: 'row',
+        width: '100%',
+        justifyContent: 'space-evenly',
+        background: 'red'
+    },
+    targetLabel: {
+        display: 'flex',
+        borderRadius: 5,
+        borderColor: 'white',
+        borderWidth: 1,
+        flex: 1,
+        maxWidth: '40%',
+        backgroundColor: '#1c0e24',
+    }
 }

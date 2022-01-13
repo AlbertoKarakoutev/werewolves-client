@@ -186,7 +186,6 @@ async function wokenUp(gameID, role) {
 }
 
 async function sendVote(gameID, voteID, voter, votee) {
-    console.log(votee)
     let res = await fetch(`${host}/game/vote`,{
         method: "PUT", 
         headers: {

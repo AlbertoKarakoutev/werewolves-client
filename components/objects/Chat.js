@@ -12,7 +12,7 @@ import { sendChatMessage } from '../../scripts/functions.js'
 const Chat = ( props ) => {
 
     const sender = props.sender
-    const height = (props.height !== null) ? props.height : 'auto'
+    const height = (props.height !== null) ? props.height : '50%'
     const data = props.data
     const gameID = props.gameId
 
@@ -42,7 +42,14 @@ const Chat = ( props ) => {
             margin:'2%',
             height: height,
             borderRadius:5,
-            flexDirection: 'row'
+            flexDirection: 'row',
+        },
+        chatModal: {
+            margin:'2%',
+            height: height,
+            borderRadius:5,
+            flexDirection: 'row',
+            flex: 1.5
         },
         minimize: {
             backgroundColor: 'black',
@@ -126,7 +133,7 @@ const Chat = ( props ) => {
     }
 
     return(
-        <View style={styles.chat}>
+        <View style={(data.type === 'day') ? styles.chat : styles.chatModal}>
             <Animated.View style={styles.chatMessages}>
 
                 <Text style={rootStyle.centeredText}>Day {data.cycle} Chat</Text>

@@ -41,13 +41,9 @@ const ActiveGame = ({route}) => {
     const [multipleWakeModalContent, setMultipleWakeModalContent] = useState({chat: {}, vote: {}, message: "", targetCount: 0, voter: ""})
     const [sleepBtnVisible, setSleepBtnVisible] = useState(false)
 
-    const [awokenRole, setAwokenRole] = useState("")
-
     const [dayChat, setDayChat] = useState({id:"0", messages:[], cycle: 0})
-    const [votes, setVotes] = useState({day: {id: 0}, ww: {}, vamp: {}})
+    const [dayVote, setDayVote] = useState({id: 0})
     const [players, setPlayers] = useState([])
-
-    console.log(multipleWakeModalContent)
 
     let sock = new SockJS(`${host}/handshake`);
     let stompClient = Stomp.over(sock);
@@ -71,7 +67,6 @@ const ActiveGame = ({route}) => {
             } else if (message.type === 'NOTIFY') {
                 setNotificationQueue([...notificationQueue, message.content.message])
             } else if (message.type === 'WAKE') {
-                setAwokenRole(message.content.awokenRole)
                 const list = (message.content.list === undefined) ? [] : message.content.list;
                 const count = (message.content.targetCount === undefined) ? 0 : message.content.targetCount;
                 const awokenRole = message.content.awokenRole
@@ -108,7 +103,7 @@ const ActiveGame = ({route}) => {
                 setSummary(message.content.summary)
                 setPlayers(message.content.players)
                 setDayChat({ id: message.content.chat, cycle: message.content.cycle })
-                setVotes({day: message.content.vote, ww: {}, vamp: {}})
+                setDayVote(message.content.vote)
                 setSleepBtnVisible(true)
 
                 let summaryStr = "SUMMARY\n\n"
@@ -136,8 +131,6 @@ const ActiveGame = ({route}) => {
             } else if (message.type === 'QUESTION') {
                 setQuestionModalContent(message.content)
                 setQuestionModalVisible(true)
-            } else if (message.type === 'VOTE') {
-                setVotes({day: message.content, ww: {}, vamp: {}})
             } else if (message.type === 'LYNCH') {
                 const lynchMessage = `Player ${message.content.lynched} has been lynched.`
                 setNotificationQueue(q => [...q, lynchMessage])
@@ -238,7 +231,7 @@ const ActiveGame = ({route}) => {
                         <Text style={rootStyle.text}>{(players.length != 0) ? `Remaining players: ${players}` : ""}</Text>
                     </View>
                     {(day && summary.hagged !== username) 
-                        ? <Vote gameID={gameID} voter={username} data={votes.day} targetCount={1}/>
+                        ? <Vote gameID={gameID} voter={username} data={dayVote} targetCount={1}/>
                         : <Text/>
                     }
                     <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
@@ -379,7 +372,7 @@ const styles = {
         flex: 1
     },
     info: {
-        width: Dimensions.get('window').width / 1.2,
+        width: Dimensions.get('window').width / 1.23,
         position: 'relative',
         height: '94%',
         flexDirection: 'column',
