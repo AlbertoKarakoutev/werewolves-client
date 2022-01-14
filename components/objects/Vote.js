@@ -144,9 +144,6 @@ const styles = {
         borderBottomColor:'white',
         borderBottomWidth: 5,
     },
-    list: {
-        flex: 1
-    },
     text: {
         fontSize: Dimensions.get('window').height / 40, 
         color: 'white',

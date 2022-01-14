@@ -2,7 +2,7 @@
   "expo": {
     "name": "Werewolves",
     "slug": "werewolves-client",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "ios": {
       "bundleIdentifier": "com.akarakoutev.werewolves",
       "buildNumber": "1.0.0"

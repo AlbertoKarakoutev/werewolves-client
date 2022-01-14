@@ -50,7 +50,7 @@ const rootStyle = StyleSheet.create({
         margin:"2%",
         color:"white",
         fontFamily:'sans-serif-thin',
-        textAlign:"center"
+        textAlign:"center",
     },
     smallText:{
         textTransform: 'uppercase',

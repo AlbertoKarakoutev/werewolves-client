@@ -35,6 +35,7 @@ const MultipleWakeModal = (props) => {
                 {(Object.keys(data).length !== 0)
                     ? <View style={{flex: 1}}>
                         <Text style={{...rootStyle.centeredText, ...{fontSize:30}}}>- {renderTitle()} -</Text>
+                        <Text style={{...rootStyle.centeredText, ...{fontSize: 10}}}>Team: {data.team}</Text>
                         <Text style={{...rootStyle.centeredText, ...{fontSize: 10}}}>Voter: {data.voter}</Text>
                         {(data.voter === username) 
                             ? <Vote voter={username} data={data.vote} gameID={gameID} targetCount={data.targetCount}/>

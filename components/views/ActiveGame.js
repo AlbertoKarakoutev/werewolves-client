@@ -99,6 +99,7 @@ const ActiveGame = ({route}) => {
                     })
                 }
             } else if (message.type === 'DAY') {
+
                 setDay(true)
                 setSummary(message.content.summary)
                 setPlayers(message.content.players)
@@ -220,12 +221,14 @@ const ActiveGame = ({route}) => {
                 </View>
             </View>
 
-            <View style={{flex: 1, display: 'flex', flexDirection: 'row', alignItems: 'center', margin: '2%', marginBottom: 0}}>
-                {(day && summary.silenced !== username && summary.hagged !== username) 
-                    ? <Chat gameId={gameID} data={dayChat} height={'95%'} sender={username}/>
-                    : <Text/>
-                }
+            <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', overflow: 'hidden'}}>
                 <View style={styles.info}>
+                    {(day && summary.silenced !== username && summary.hagged !== username) 
+                        ? <Chat gameId={gameID} data={dayChat} sender={username}/>
+                        : <Text/>
+                    }
+                </View>
+                <View style={{...styles.info, ...{width: '88%'}}}>
                     <View>
                         <Text style={rootStyle.text}>{(dayChat.cycle !== null) ? `Day: ${dayChat.cycle}` : ""}</Text>
                         <Text style={rootStyle.text}>{(players.length != 0) ? `Remaining players: ${players}` : ""}</Text>
@@ -368,14 +371,8 @@ const styles = {
         borderColor:'white',
         borderWidth:0.5
     },
-    list: {
-        flex: 1
-    },
     info: {
-        width: Dimensions.get('window').width / 1.23,
-        position: 'relative',
         height: '94%',
         flexDirection: 'column',
-        justifyContent: 'space-between'
     }
 }

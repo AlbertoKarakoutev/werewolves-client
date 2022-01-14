@@ -12,7 +12,6 @@ import { sendChatMessage } from '../../scripts/functions.js'
 const Chat = ( props ) => {
 
     const sender = props.sender
-    const height = (props.height !== null) ? props.height : '50%'
     const data = props.data
     const gameID = props.gameId
 
@@ -40,13 +39,12 @@ const Chat = ( props ) => {
     const styles = {
         chat: {
             margin:'2%',
-            height: height,
+            marginLeft: 0,
             borderRadius:5,
             flexDirection: 'row',
         },
         chatModal: {
             margin:'2%',
-            height: height,
             borderRadius:5,
             flexDirection: 'row',
             flex: 1.5
@@ -55,15 +53,15 @@ const Chat = ( props ) => {
             backgroundColor: 'black',
             flexDirection: 'column',
             justifyContent: 'center',
-            borderTopRightRadius: 5,
-            borderBottomRightRadius: 5,
+            borderTopRightRadius: 15,
+            borderBottomRightRadius: 15,
             elevation: 5
         },
         chatMessages: {
-            display: 'flex',
             overflow: 'hidden',
             backgroundColor: '#1c0e24',
             borderTopLeftRadius:5,
+            height: '98%',
             width: width.interpolate( {
                 inputRange: [0, 0.96],
                 outputRange: ['0%', '96%'],
@@ -108,7 +106,6 @@ const Chat = ( props ) => {
             textAlign: 'right'
         },    
         chatInput: {
-            display: 'flex',
             flexDirection: 'row',
             borderTopWidth: 1,
             borderColor: 'white',
@@ -136,7 +133,7 @@ const Chat = ( props ) => {
         <View style={(data.type === 'day') ? styles.chat : styles.chatModal}>
             <Animated.View style={styles.chatMessages}>
 
-                <Text style={rootStyle.centeredText}>Day {data.cycle} Chat</Text>
+                <Text style={{...rootStyle.centeredText, ...{width: Dimensions.get('window').width * (30/100)}}}>Day {data.cycle} Chat</Text>
                 <FlatList inverted keyExtractor={item => String(data.messages.indexOf(item))} data={data.messages} contentContainerStyle={{ justifyContent: 'flex-end' }} style={{width: Dimensions.get('window').width * (85/100)}} renderItem={ ({item, index}) => 
                     <View style={(item.sender == sender) ? styles.myChatMessage : styles.chatMessage}>
                         <Text style={styles.chatSender}> {item.sender} </Text>
@@ -169,9 +166,9 @@ const Chat = ( props ) => {
             <Pressable onPress={toggleChat} style={styles.minimize}>
                 <FontAwesomeIcon 
                     icon={(!open) ? faChevronLeft : faChevronRight}
-                    size={25}
+                    size={30}
                     color={'white'}
-                    style={{borderColor:'white', shadowColor:"white",borderRadius:25}}/>
+                    style={{borderColor:'white', shadowColor:"white", borderRadius:25}}/>
             </Pressable>
         </View>
     )
