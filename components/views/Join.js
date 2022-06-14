@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import {useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, View, Pressable, Dimensions} from 'react-native';
 import { Modal, ModalContent, ScaleAnimation, BottomModal } from 'react-native-modals';
 import { useNavigation } from '@react-navigation/native';
@@ -70,16 +69,26 @@ const Join = () => {
             return <View style={{flex: 1, flexDirection: 'column', justifyContent: 'center'}}><Text style={{...rootStyle.text, ...margins}}>No active games!</Text></View>
         }
         return <FlatList style={styles.list} data={games} renderItem={({item, index}) => 
-                    <Pressable onPress={() => {setSelectedGame(item.id); setNameModalVisible(true)}} style={styles.gameButton}>
-                        <Text style={styles.gameButtonText}> {index+1}. ID: #{item.id}, ({item.players} Players active) </Text>
-                        
-                        <Pressable onPress={() => deleteGame(item.id)} style={styles.deleteButton}>
-                        <FontAwesomeIcon 
-                            icon={faTrashAlt}
-                            color="#ff0000"
-                            size={Dimensions.get('window').width / 12}/>
+                    (!item.started)
+                    ?   <Pressable onPress={() => {setSelectedGame(item.id); setNameModalVisible(true)}} style={styles.gameButton}>
+                            <Text style={styles.gameButtonText}> {index+1}. ID: #{item.id}, ({item.players} Players active) </Text>
+                            <Pressable onPress={() => deleteGame(item.id)} style={styles.deleteButton}>
+                                <FontAwesomeIcon 
+                                    icon={faTrashAlt}
+                                    color="#ff0000"
+                                    size={Dimensions.get('window').width / 12}/>
+                            </Pressable>
                         </Pressable>
-                    </Pressable>
+                    :   <View style={styles.disabledGameButton}>
+                            <Text style={styles.disabledButtonText}> {index+1}. ID: #{item.id} (In Progress) </Text>
+                            <Pressable onPress={() => deleteGame(item.id)} style={styles.deleteButton}>
+                                <FontAwesomeIcon 
+                                    icon={faTrashAlt}
+                                    color="#ff0000"
+                                    size={Dimensions.get('window').width / 12}/>
+                            </Pressable>
+                        </View>
+                    
                 }/>
     }
 
@@ -139,7 +148,6 @@ const styles = StyleSheet.create({
         backgroundColor:"#1b0d24",
         padding:5,
         borderRadius:5,
-        //elevation:5,
         shadowColor: '#fff',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.8,
@@ -147,6 +155,16 @@ const styles = StyleSheet.create({
         borderColor:'white',
         borderWidth:0.3
 
+    },
+    disabledGameButton:{
+        display:'flex',
+        flexDirection:'row',
+        justifyContent:'space-between',
+        alignItems: 'center',
+        backgroundColor: "#6b0aab",
+        borderRadius: 4,
+        margin: 10,
+        padding: 10
     },
     gameButton:{
         display:'flex',
@@ -160,6 +178,10 @@ const styles = StyleSheet.create({
     },
     gameButtonText:{
         color: '#fff', 
+        fontSize: Dimensions.get('window').width / 26
+    },
+    disabledButtonText:{
+        color: '#ccc', 
         fontSize: Dimensions.get('window').width / 26
     },
     deleteButton:{

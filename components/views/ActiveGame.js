@@ -69,8 +69,14 @@ const ActiveGame = ({route}) => {
             } else if (message.type === 'WAKE') {
                 const list = (message.content.list === undefined) ? [] : message.content.list;
                 const count = (message.content.targetCount === undefined) ? 0 : message.content.targetCount;
+                const canCancelTurn = (message.content.canCancelTurn === undefined) ? false : message.content.canCancelTurn;
                 const awokenRole = message.content.awokenRole
-                let messageObj = {message: message.content.message, targetList: list, targetCount: count, awokenRole: awokenRole}
+                let messageObj = {
+                    message: message.content.message, 
+                    targetList: list, 
+                    targetCount: count,
+                    awokenRole: awokenRole,
+                    canCancelTurn: canCancelTurn}
                 setMessageQueue(q => [...q, messageObj])
             } else if (message.type === 'CHAT') {
                 let newMessages = message.content.messages
@@ -228,11 +234,15 @@ const ActiveGame = ({route}) => {
                         : <Text/>
                     }
                 </View>
-                <View style={{...styles.info, ...{width: '88%'}}}>
+                <View style={{...styles.info, ...{flex: 1, minWidth: '88%'}}}>
                     <View>
-                        <Text style={rootStyle.text}>{(dayChat.cycle !== null) ? `Day: ${dayChat.cycle}` : ""}</Text>
-                        <Text style={rootStyle.text}>{(players.length != 0) ? `Remaining players: ${players}` : ""}</Text>
+                        <Text style={rootStyle.text}>{(day) ? `Day: ${dayChat.cycle}` : `Night: ${dayChat.cycle}`}</Text>
+                        <Text style={rootStyle.text}>{(players.length != 0) ? `Remaining: ${players.join(", ")}` : ""}</Text>
                     </View>
+                    {(!day) 
+                        ? <ActivityIndicator size={Dimensions.get('window').width / 5} color="#69237d"/> 
+                        : <Text/>
+                    }
                     {(day && summary.hagged !== username) 
                         ? <Vote gameID={gameID} voter={username} data={dayVote} targetCount={1}/>
                         : <Text/>
@@ -283,7 +293,7 @@ const ActiveGame = ({route}) => {
                         <Button 
                             style={{...rootStyle.button, ...{flex: 1}}} 
                             onPress={() => {
-                                answer(gameID, username, (questionModalContent.active) ? roles.active.name : roles.passive.name, true).then(data => {
+                                answer(gameID, username, (questionModalContent.active === 'true') ? roles.active.name : roles.passive.name, true).then(data => {
                                     validateResponse(data)
                                 })
                                 setQuestionModalVisible(false)
@@ -293,7 +303,7 @@ const ActiveGame = ({route}) => {
                         <Button 
                             style={{...rootStyle.button, ...{flex: 1}}} 
                             onPress={() => {
-                                answer(gameID, username, (questionModalContent.active) ? roles.active.name : roles.passive.name, false).then(data => {
+                                answer(gameID, username, (questionModalContent.active === 'true') ? roles.active.name : roles.passive.name, false).then(data => {
                                     validateResponse(data)
                                 })
                                 setQuestionModalVisible(false)
@@ -373,6 +383,6 @@ const styles = {
     },
     info: {
         height: '94%',
-        flexDirection: 'column',
+        justifyContent: 'space-between',
     }
 }

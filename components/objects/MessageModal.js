@@ -16,6 +16,7 @@ const MessageModal = (props) => {
     const messageIndex = useRef(0)
 
     const [visible, setVisible] = useState(false)
+    const [canCancel, setCanCancel] = useState(false)
     const [content, setContent] = useState("")
     const [targetList, setTargetList] = useState([])
     const [targetCount, setTargetCount] = useState(0)
@@ -59,10 +60,11 @@ const MessageModal = (props) => {
             messageIndex.current += 1;
         }
         setContent(messageQueue[messageIndex.current].message);
+        setCanCancel(messageQueue[messageIndex.current].canCancelTurn)
         setTargetList(messageQueue[messageIndex.current].targetList);
         setTargetCount(messageQueue[messageIndex.current].targetCount);
         setAwokenRole(messageQueue[messageIndex.current].awokenRole)
-        setTargetBtnVisible(messageQueue[messageIndex.current].targetCount == 0 || awokenRole === 'WITCH')
+        setTargetBtnVisible(messageQueue[messageIndex.current].targetCount == 0)
         setVisible(true)
     }
 
@@ -81,6 +83,12 @@ const MessageModal = (props) => {
             } 
         }
 
+        if (messageQueue.length > messageIndex.current+1) {
+            showNextMessage()
+        } else {
+            setVisible(false)
+        }
+
         if (targetList.length > 0) {
             const parsedTargets = (targetCount > 1) ? target[0] + "_" + target[1] : target[0];
             setTargetRequest(awokenRole, gameID, parsedTargets).then(data => {
@@ -93,11 +101,6 @@ const MessageModal = (props) => {
             })
         }
 
-        if (messageQueue.length > messageIndex.current+1) {
-            showNextMessage()
-        } else {
-            setVisible(false)
-        }
 
     }
 
@@ -173,7 +176,18 @@ const MessageModal = (props) => {
                 }   
                 <Text style={rootStyle.centeredText}>{content}</Text>
                 {renderByType()}
-                <Button visible={targetBtnVisible} onPress={modalAction}>{(targetList.length == 0) ? "OK" : "SEND"}</Button>
+                <Button visible={targetBtnVisible} onPress={modalAction}>{(targetList.length == 0) ? "OK" : "TARGET"}</Button>
+                <Button visible={(targetCount != 0) && canCancel} onPress={() => {
+                    wokenUp(gameID, awokenRole).then(data => {
+                        validateResponse(data)
+                    })
+
+                    if (messageQueue.length > messageIndex.current+1) {
+                        showNextMessage()
+                    } else {
+                        setVisible(false)
+                    }
+                }}>CANCEL TARGET</Button>
             </ModalContent>
         </BottomModal>
     )

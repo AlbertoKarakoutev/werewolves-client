@@ -89,10 +89,9 @@ const rootStyle = StyleSheet.create({
         paddingVertical: 5,
         borderRadius:10,
         backgroundColor:small_btn,
-        position:'relative',
         marginLeft:'20%',
         marginRight:'20%',
-        marginBottom:15
+        marginVertical: 5
     },
     disabledButton:{
         alignItems: 'center',

@@ -10,6 +10,7 @@ import Join from './components/views/Join.js';
 import Create from './components/views/Create.js';
 import Lobby from './components/views/Lobby.js';
 import ActiveGame from './components/views/ActiveGame.js';
+import HowTo from './components/views/HowTo.js';
 
 const Stack = createStackNavigator();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Stack.Screen name="Create" component={Create} />
           <Stack.Screen name="Lobby" component={Lobby} />
           <Stack.Screen name="ActiveGame" component={ActiveGame} />
+          <Stack.Screen name="HowTo" component={HowTo} />
         </Stack.Navigator>
       </View>
       <ModalPortal/>

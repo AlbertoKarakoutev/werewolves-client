@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { FlatList, View, Text, TextInput, Pressable, Animated, Easing, Dimensions } from 'react-native';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { faChevronLeft, faChevronRight, faArrowCircleRight } from '@fortawesome/free-solid-svg-icons'
+import { faChevronLeft, faChevronRight, faArrowCircleRight, faExclamationCircle } from '@fortawesome/free-solid-svg-icons'
 
 import rootStyle from "../style.js"
 import Button from '../objects/Button.js'
@@ -16,12 +16,19 @@ const Chat = ( props ) => {
     const gameID = props.gameId
 
     const [open, setOpen] = useState(true)
+    const [notification, setNotification] = useState(false)
     const width = useRef(new Animated.Value(0)).current
     const [chatMessage, setChatMessage] = useState("")
 
     useEffect(() => {
 
-    }, [data, width])
+    }, [notification, width])
+
+    useEffect(() => {
+        if (open) {
+            setNotification(true)
+        }
+    }, [data])
 
     const toggleChat = () => {
         Animated.timing(
@@ -33,12 +40,14 @@ const Chat = ( props ) => {
                 useNativeDriver: false
             }
         ).start();
+        setNotification(false)
         setOpen(!open)
     }
 
     const styles = {
         chat: {
             margin:'2%',
+            flex: 1,
             marginLeft: 0,
             borderRadius:5,
             flexDirection: 'row',
@@ -55,13 +64,14 @@ const Chat = ( props ) => {
             justifyContent: 'center',
             borderTopRightRadius: 15,
             borderBottomRightRadius: 15,
+            overflow: 'visible',
             elevation: 5
         },
         chatMessages: {
             overflow: 'hidden',
             backgroundColor: '#1c0e24',
             borderTopLeftRadius:5,
-            height: '98%',
+            height: '100%',
             width: width.interpolate( {
                 inputRange: [0, 0.96],
                 outputRange: ['0%', '96%'],
@@ -126,6 +136,12 @@ const Chat = ( props ) => {
             justifyContent: 'center',
             alignItems: 'center',
             elevation: 5
+        },
+        notification: {
+            position: 'absolute',
+            top: 20,
+            left: 10,
+            marginBottom: 20
         }
     }
 
@@ -164,6 +180,10 @@ const Chat = ( props ) => {
             </Animated.View>
                
             <Pressable onPress={toggleChat} style={styles.minimize}>
+                {(notification)
+                    ? <FontAwesomeIcon icon={faExclamationCircle} size={35} color={'red'} style={styles.notification}/>
+                    : <Text/>
+                }
                 <FontAwesomeIcon 
                     icon={(!open) ? faChevronLeft : faChevronRight}
                     size={30}

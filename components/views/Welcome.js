@@ -39,6 +39,7 @@ const Welcome = () => {
 
             <Button onPress={createGameWithServerCheck}>Create Game</Button>
             <Button onPress={joinGameWithServerCheck}>Join Game</Button>
+            <Button onPress={() => navigation.navigate('HowTo')}>Help</Button>
             <Button onPress={exit}>Exit</Button>
             
             <Modal 

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useState } from 'react';
-import { FlatList, View, Text, Pressable, Dimensions } from 'react-native';
+import { ScrollView, View, Text, Pressable, Dimensions } from 'react-native';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faCheckSquare, faCircle } from '@fortawesome/free-solid-svg-icons'
@@ -63,7 +63,7 @@ const Vote = ( props ) => {
             elements.push(
                 <Pressable key={index} onPress={() => markSelected(votee, index)} style={styles.selected}>
                     <Text style={styles.text}> {votee} </Text>
-                    {(selected.includes(votee)) ? <FontAwesomeIcon icon={faCheckSquare} color="#ff0000" size={20}/> : <Text></Text>}
+                    {(selected.includes(votee)) ? <FontAwesomeIcon icon={faCheckSquare} color="#ff0000" size={15}/> : <Text></Text>}
                 </Pressable>
             )
         })
@@ -100,9 +100,9 @@ const Vote = ( props ) => {
             }   
             <View style={styles.voteTab}>
                 <Text style={rootStyle.smallText}>Cast your vote</Text>
-                <View style={styles.voteList}>
+                <ScrollView scrollEnabled={true} style={styles.voteList}>
                     {renderElements()}
-                </View>
+                </ScrollView>
                 <Button visible={btnVisible} style={rootStyle.smallButton} onPress={() => {
                     if (data.type === 'lynch') {
                         setBtnVisible(false)
@@ -119,7 +119,6 @@ export default Vote;
 
 const styles = {
     voteTab: {
-        justifyContent: 'space-between',
         flex: 1,
         backgroundColor: '#1c0e24',
         borderRadius:5,
@@ -128,16 +127,15 @@ const styles = {
     voteList: {
         flex: 1,
         height: '100%',
+        overflow: 'scroll'
     },
     selected: {
-        flex: 0.2,
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingLeft: 10,
         paddingRight: 10,
         marginTop: 5,
-        height: '10%',
-        minHeight: 20,
+        minHeight: 40,
         alignItems: 'center',
         borderRadius: 5,
         backgroundColor: "#9d0aff",

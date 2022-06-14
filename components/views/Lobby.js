@@ -106,6 +106,7 @@ const Lobby = ({ route }) => {
     
     return (
         <View style={rootStyle.container}>
+            <Text style={{...rootStyle.title, ...{marginBottom: -70}}}> - Game {gameID} - </Text>
             <Text style={rootStyle.title}>Waiting for players...</Text>
             {/* <ActivityIndicator size={Dimensions.get('window').width / 5} color="#69237d"/> */}
             <FlatList keyExtractor={(item, index) => index.toString()} style={{flex:1}} data={players} renderItem={({item, index}) => 
